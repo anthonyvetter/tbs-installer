@@ -10,6 +10,7 @@ GH_USERNAME=unset
 GH_PASSWORD=unset
 PR_USERNAME=unset
 PR_PASSWORD=unset
+ERROR_EXIT=false
 
 usage()
 {
@@ -19,48 +20,52 @@ usage()
   Currently supported code repositories: GitHub
   Currently supported platforms: MacOS/Darwin
   Issues:
-    - double '--' flags don't work. not supported by getopts?
+    - doesn't validate required flags are set
+    - doesn't validate arguements have any input
 
   Usage:     
-    -p, --pivnet-api-token          (required)              PivNet API token used for 'pivnet login --api-token'
-    -d, --dockerhub-username        (required)              Your Docker Hub username
-    -w, --dockerhub-password        (required)              Your Docker Hub password
-    -r, --pivotal-registry-username (required)              Username used to login to registry.pivotal.io
-    -k, --pivotal-registry-password (required)              Password used to login to registry.pivotal.io
+    --pivnet-api-token          (required)                  PivNet API token used for 'pivnet login --api-token'
+    --dockerhub-username        (required)                  Your Docker Hub username
+    --dockerhub-password        (required)                  Your Docker Hub password
+    --pivotal-registry-username (required)                  Username used to login to registry.pivotal.io
+    --pivotal-registry-password (required)                  Password used to login to registry.pivotal.io
     -h, --help                                              Print the help message"
   exit 2
 }
 
-while getopts 'p:d:w:r:k:h' OPTION; do
-  case "$OPTION" in
-    p | --pivnet-api-token)
-      export PIVNET_API_TOKEN="$OPTARG"
-      ;;
+while [[ $# -gt 0 ]] 
+  do
+    case "$1" in
+      --pivnet-api-token)
+        export PIVNET_API_TOKEN=$2
+        ;;
 
-    d | --dockerhub-username)
-      export DH_USERNAME="$OPTARG"
-      ;;
+      --dockerhub-username)
+        export DH_USERNAME=$2
+        ;;
 
-    w | --dockerhub-password)
-      export DH_PASSWORD="$OPTARG"
-      ;;
+      --dockerhub-password)
+        export DH_PASSWORD=$2
+        ;;
 
-    r | --pivotal-registry-username)
-      export PR_USERNAME="$OPTARG"
-      ;;
-    k | --pivotal-registry-password)
-      export PR_PASSWORD="$OPTARG"
-      ;;
+      --pivotal-registry-username)
+        export PR_USERNAME=$2
+        ;;
+      --pivotal-registry-password)
+        export PR_PASSWORD=$2
+        ;;
 
-    h | --help)
-      usage
-      ;;
+      -h | --help)
+        usage
+        ;;
 
-    ?)
-      usage
-      exit 1
-      ;;
-  esac
+      -?*)
+        printf 'WARN: Unknown option (ignored): %s\n' "$1" >&2
+        usage
+        exit 1
+        ;;
+    esac
+  shift
 done
 
 printf '\n\e[1;34m%-6s\e[m%s\n' "SETTING UP ENVIRONMENT" 
